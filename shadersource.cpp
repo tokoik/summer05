@@ -1,12 +1,15 @@
+﻿//
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(WIN32)
+#if defined(_WIN32)
+#  define _CRT_SECURE_NO_WARNINGS
 #  pragma warning(disable: 4996)
 #  include <malloc.h>
-#  include "glew.h"
-#  include "glut.h"
-#  include "glext.h"
+#  include <GL/glew.h>
+#  include <GL/glut.h>
+#  include <GL/glext.h>
 #elif defined(__APPLE__) || defined(MACOSX)
+#  define GL_SILENCE_DEPRECATION
 #  include <GLUT/glut.h>
 #else
 #  define GL_GLEXT_PROTOTYPES

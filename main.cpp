@@ -1,12 +1,14 @@
+﻿//
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(WIN32)
-//#  pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
-#  pragma comment(lib, "glew32.lib")
-#  include "glew.h"
-#  include "glut.h"
-#  include "glext.h"
+#if defined(_WIN32)
+#  define _USE_MATH_DEFINES
+#  define _CRT_SECURE_NO_WARNINGS
+#  include <GL/glew.h>
+#  include <GL/glut.h>
+#  include <GL/glext.h>
 #elif defined(__APPLE__) || defined(MACOSX)
+#  define GL_SILENCE_DEPRECATION
 #  include <GLUT/glut.h>
 #else
 #  define GL_GLEXT_PROTOTYPES
@@ -115,13 +117,18 @@ static void init(void)
   /* 一時的な変換行列 */
   GLfloat temp0[16], temp1[16];
 
-#if defined(WIN32)
-  /* GLEW の初期化 */
-  GLenum err = glewInit();
-  if (err != GLEW_OK) {
-    fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-    exit(1);
-  }
+#if defined(_WIN32)
+#  define _USE_MATH_DEFINES
+#  define _CRT_SECURE_NO_WARNINGS
+#  include <GL/glew.h>
+#  include <GL/glut.h>
+#  include <GL/glext.h>
+#elif defined(__APPLE__) || defined(MACOSX)
+#  define GL_SILENCE_DEPRECATION
+#  include <GLUT/glut.h>
+#else
+#  define GL_GLEXT_PROTOTYPES
+#  include <GL/glut.h>
 #endif
 
   /* 背景色 */
