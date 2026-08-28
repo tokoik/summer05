@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.22)
 project(summer05 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # MSVC で UTF-8 ソースコードを正しく処理するための設定
@@ -16,14 +16,22 @@ set(SOURCES
     shadersource.cpp
 )
 
-# リソースファイル（シェーダ）
-set(RESOURCE_FILES
+# シェーダファイル
+set(SHADER_FILES
     simple.vert
     simple.frag
 )
 
+# リソースファイル
+set(RESOURCE_FILES
+)
+
 # ソリューションエクスプローラー用のグループ分け
+source_group("Shader Files" FILES ${SHADER_FILES})
 source_group("Resource Files" FILES ${RESOURCE_FILES})
+
+# 外部ライブラリをプロジェクト内の libs/ フォルダへ自動ダウンロードする設定
+set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
 if(APPLE)
 
@@ -31,7 +39,7 @@ if(APPLE)
     set(ICON_FILE "opengl.icns")
 
     # アプリケーションバンドルとして実行ファイルを作成する
-    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${RESOURCE_FILES} ${ICON_FILE})
+    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${SHADER_FILES} ${RESOURCE_FILES} ${ICON_FILE})
 
     # GLUT と OpenGL の Framework を検索してリンクする
     find_library(GLUT_LIBRARY GLUT)
@@ -57,7 +65,8 @@ if(APPLE)
         XCODE_GENERATE_SCHEME ON
     )
 
-    # リソースの配置設定
+    # リソースファイルなどをアプリケーションバンドル内の Resources に組み込む
+    set_source_files_properties(${SHADER_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     set_source_files_properties(${RESOURCE_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     set_source_files_properties(${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
@@ -67,18 +76,21 @@ if(APPLE)
 elseif(WIN32)
 
     # Windows (Visual Studio) の設定
-    add_executable(${PROJECT_NAME} ${SOURCES})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${SHADER_FILES} ${RESOURCE_FILES})
 
     # GLEW のソースを取得してビルドする
     include(FetchContent)
     FetchContent_Declare(
         glew
         GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
-        GIT_TAG master
+        GIT_TAG glew-cmake-2.3.1
     )
     set(ONLY_LIBS ON CACHE BOOL "" FORCE)
     set(BUILD_UTILS OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(glew)
+    if(TARGET libglew_static)
+        set_target_properties(libglew_static PROPERTIES INTERFACE_COMPILE_DEFINITIONS "GLEW_STATIC")
+    endif()
 
     # freeglut のソースを取得してビルドする
     FetchContent_Declare(
@@ -106,7 +118,7 @@ elseif(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE FREEGLUT_STATIC GLEW_STATIC)
 
     # 起動時に読み込めるようにビルド後にリソースファイルを実行ファイルと同じ階層およびビルドディレクトリにコピーする
-    foreach(RESOURCE_FILE IN LISTS RESOURCE_FILES)
+    foreach(RESOURCE_FILE IN LISTS SHADER_FILES RESOURCE_FILES)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -118,8 +130,8 @@ elseif(WIN32)
         )
     endforeach()
 
-    # Visual Studio で実行・デバッグする際に、リソースの変更があれば自動的にコピーされるようにする
-    set_source_files_properties(${RESOURCE_FILES} PROPERTIES
+    # Visual Studio で実行・デバッグする際に、シェーダやリソースの変更があれば自動的にコピーされるようにする
+    set_source_files_properties(${SHADER_FILES} ${RESOURCE_FILES} PROPERTIES
         VS_COPY_TO_OUT_DIR PreserveNewest
     )
 
@@ -132,7 +144,7 @@ elseif(WIN32)
 else()
 
     # Ubuntu Linux (その他UNIX系) の設定
-    add_executable(${PROJECT_NAME} ${SOURCES})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${SHADER_FILES} ${RESOURCE_FILES})
 
     # libGL.so を確実にリンクするための設定
     set(OpenGL_GL_PREFERENCE "LEGACY")
@@ -150,7 +162,7 @@ else()
     )
 
     # 起動時に読み込めるようにビルド後にリソースファイルを実行ファイルと同じ階層にコピーする
-    foreach(RESOURCE_FILE IN LISTS RESOURCE_FILES)
+    foreach(RESOURCE_FILE IN LISTS SHADER_FILES RESOURCE_FILES)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different

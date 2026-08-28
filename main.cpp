@@ -1,12 +1,14 @@
-﻿//
-#include <stdio.h>
-#include <stdlib.h>
-#if defined(_WIN32)
+﻿#if defined(_WIN32)
 #  define _USE_MATH_DEFINES
 #  define _CRT_SECURE_NO_WARNINGS
 #  include <GL/glew.h>
 #  include <GL/glut.h>
-#  include <GL/glext.h>
+#  if defined(near)
+#    undef near
+#  endif
+#  if defined(far)
+#    undef far
+#  endif
 #elif defined(__APPLE__) || defined(MACOSX)
 #  define GL_SILENCE_DEPRECATION
 #  include <GLUT/glut.h>
@@ -14,6 +16,8 @@
 #  define GL_GLEXT_PROTOTYPES
 #  include <GL/glut.h>
 #endif
+#include <stdio.h>
+#include <stdlib.h>
 
 /*
 ** シェーダのソースプログラムの読み込みに使う関数
@@ -118,17 +122,12 @@ static void init(void)
   GLfloat temp0[16], temp1[16];
 
 #if defined(_WIN32)
-#  define _USE_MATH_DEFINES
-#  define _CRT_SECURE_NO_WARNINGS
-#  include <GL/glew.h>
-#  include <GL/glut.h>
-#  include <GL/glext.h>
-#elif defined(__APPLE__) || defined(MACOSX)
-#  define GL_SILENCE_DEPRECATION
-#  include <GLUT/glut.h>
-#else
-#  define GL_GLEXT_PROTOTYPES
-#  include <GL/glut.h>
+  /* GLEW の初期化 */
+  GLenum err = glewInit();
+  if (err != GLEW_OK) {
+    fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+    exit(1);
+  }
 #endif
 
   /* 背景色 */

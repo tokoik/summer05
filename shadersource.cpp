@@ -1,13 +1,8 @@
-﻿//
-#include <stdio.h>
-#include <stdlib.h>
-#if defined(_WIN32)
+﻿#if defined(_WIN32)
 #  define _CRT_SECURE_NO_WARNINGS
-#  pragma warning(disable: 4996)
 #  include <malloc.h>
 #  include <GL/glew.h>
 #  include <GL/glut.h>
-#  include <GL/glext.h>
 #elif defined(__APPLE__) || defined(MACOSX)
 #  define GL_SILENCE_DEPRECATION
 #  include <GLUT/glut.h>
@@ -15,6 +10,8 @@
 #  define GL_GLEXT_PROTOTYPES
 #  include <GL/glut.h>
 #endif
+#include <stdio.h>
+#include <stdlib.h>
  
 /*
 ** シェーダーのソースプログラムをメモリに読み込む

@@ -11,9 +11,10 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps/
+/libs/
 
 # Compiled files (fallback if built in-source)
-/glsl9
+/summer05
 /core
 a.out
 *.o
