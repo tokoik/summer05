@@ -51,7 +51,7 @@ extern void cameraMatrix(float fovy, float aspect,
   GLfloat* matrix);
 
 /*
-** 視野変換行列を求める
+** ビュー変換行列を求める
 */
 extern void lookAt(float ex, float ey, float ez,
   float tx, float ty, float tz,
@@ -186,11 +186,11 @@ static void init(void)
   GLfloat perspective[16];
   cameraMatrix(30.0f, 1.0f, 7.0f, 11.0f, perspective);
 
-  /* 視野変換行列を求める */
+  /* ビュー変換行列を求める */
   GLfloat viewing[16];
   lookAt(4.0f, 5.0f, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, viewing);
 
-  /* 視野変換行列と投影変換行列の積を projectionMatrix に入れる */
+  /* ビュー変換行列と投影変換行列の積を projectionMatrix に入れる */
   multiplyMatrix(viewing, perspective, projectionMatrix);
 
   /* uniform 変数 projectionMatrix の場所を得る */

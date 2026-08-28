@@ -78,7 +78,7 @@ void cameraMatrix(float fovy, float aspect,
 }
 
 /*
-** 視野変換行列を求める
+** ビュー変換行列を求める
 */
 void lookAt(float ex, float ey, float ez,
   float tx, float ty, float tz,
