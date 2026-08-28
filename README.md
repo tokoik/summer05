@@ -98,33 +98,76 @@
 ### 6.1 インデックスバッファ (GL_ELEMENT_ARRAY_BUFFER) の設定
 
 ```cpp
-/* 頂点座標バッファ (buffer[0]) の設定 */
+/* 頂点のデータ型 */
+typedef GLfloat Position[3];
+
+/* 頂点バッファオブジェクトに８頂点分のメモリ領域を確保する */
 glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-glBufferData(GL_ARRAY_BUFFER, sizeof (Position) * 8, NULL, GL_STATIC_DRAW);
-position = (Position *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-/* 8頂点分の座標を書き込む */
+glBufferData(GL_ARRAY_BUFFER, sizeof(Position) * 8, NULL, GL_STATIC_DRAW);
+
+/* 頂点バッファオブジェクトのメモリをプログラムのメモリ空間にマップする */
+Position* position = (Position*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+/* 頂点バッファオブジェクトのメモリにデータを書き込む (8頂点) */
+position[0][0] = -1.0f; position[0][1] = -1.0f; position[0][2] = -1.0f;
+...
+position[7][0] = -1.0f; position[7][1] =  1.0f; position[7][2] =  1.0f;
+
+/* 頂点バッファオブジェクトのメモリをプログラムのメモリ空間から切り離す */
 glUnmapBuffer(GL_ARRAY_BUFFER);
+
+/* index が 0 の attribute 変数に頂点バッファオブジェクトの場所と書式を設定する */
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+/* 頂点バッファオブジェクトを解放する */
 glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-/* インデックスバッファ (buffer[1]) の設定 */
+/* 稜線のデータ型 */
+typedef GLuint Edge[2];
+
+/* 頂点バッファオブジェクトに１２稜線分のメモリ領域を確保する */
 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[1]);
-glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof (Edge) * 12, NULL, GL_STATIC_DRAW);
-edge = (Edge *)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
-/* 12稜線分のインデックス (24頂点インデックス) を書き込む */
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Edge) * 12, NULL, GL_STATIC_DRAW);
+
+/* 頂点バッファオブジェクトのメモリをプログラムのメモリ空間にマップする */
+Edge* edge = (Edge*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+/* 頂点バッファオブジェクトのメモリにデータを書き込む (12稜線) */
+edge[0][0] = 0; edge[0][1] = 1;
+...
+edge[11][0] = 7; edge[11][1] = 4;
+
+/* 頂点バッファオブジェクトのメモリをプログラムのメモリ空間から切り離す */
 glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+/* 頂点バッファオブジェクトを解放する */
 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 ```
 
 ### 6.2 glDrawElements による描画
 
 ```cpp
-/* 頂点座標バッファのバインド */
-glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+/* 画面クリア */
+glClear(GL_COLOR_BUFFER_BIT);
 
-/* インデックスバッファのバインド */
+/* シェーダプログラムを適用する */
+glUseProgram(gl2Program);
+
+/* 投影変換行列の uniform 変数 projectionMatrix に変換行列の値を設定する */
+glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, projectionMatrix);
+
+/* 頂点バッファオブジェクトとして buffer[0] を指定する */
+glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+
+/* 頂点バッファオブジェクトの指標として buffer[1] を指定する */
 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[1]);
 
-/* インデックスを用いて描画 */
+/* 図形を描く */
 glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+
+/* 頂点バッファオブジェクトを解放する */
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+glFlush();
 ```
